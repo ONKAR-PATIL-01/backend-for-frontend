@@ -3,7 +3,7 @@ const { request } = require('express');
 
 
 const Headers = {
-    'x-tenant-id': '63f72bbaf9dfbe6751b8878c',
+    'x-tenent-id': '63fef7e97dab9ca0bd708954',
     'Content-Type': 'application/json'
 }
 
@@ -12,7 +12,7 @@ const Headers = {
 const surveyByEmail = async (request, response) => {
 
     var surveyData;
-    await axios.get('https://api.qa.gessa.io/cms/survey/?page=0&size=10'
+    await axios.get('https://api.qa.gessa.io/cms/surveys/?page=0&size=5'
         , {
             headers: Headers
         })
@@ -34,7 +34,7 @@ const surveyByEmail = async (request, response) => {
             totalDraftSurvey:draftSurvey.length,
             totalCompletedSurvey: completedSurvey.length,
             
-            survey: totalSurvey
+            surveys: totalSurvey
         });
 
 }
@@ -45,7 +45,7 @@ const surveyByEmail = async (request, response) => {
 const surveyBySurveyId = async (request, response) => {
 
     var surveyData;
-    await axios.get('https://api.qa.gessa.io/cms/survey/?page=0&size=10'
+    await axios.get('https://api.qa.gessa.io/cms/surveys/?page=0&size=10'
         , {
             headers: Headers
         })
@@ -66,7 +66,7 @@ const surveyBySurveyId = async (request, response) => {
 const surveyCount = async (request, response) => {
 
     var surveyData;
-    await axios.get('https://api.qa.gessa.io/cms/survey/?page=0&size=10'
+    await axios.get('https://api.qa.gessa.io/cms/surveys/?page=0&size=10'
         , {
             headers: Headers
         })
@@ -89,7 +89,7 @@ const surveyCount = async (request, response) => {
 const surveyCompleted = async (request, response) => {
 
     var surveyData;
-    await axios.get('https://api.qa.gessa.io/cms/survey/?page=0&size=10'
+    await axios.get('https://api.qa.gessa.io/cms/surveys/?page=0&size=10'
         , {
             headers: Headers
         })
@@ -112,7 +112,7 @@ const surveyCompleted = async (request, response) => {
         totalDraftSurvey: draftSurvey.length,
         totalCompletedSurvey: completedSurvey.length,
 
-        survey: completedSurvey
+        surveys: completedSurvey
     });
 
 }
@@ -123,7 +123,7 @@ const surveyCompleted = async (request, response) => {
 const surveyOngoing = async (request, response) => {
 
     var surveyData;
-    await axios.get('https://api.qa.gessa.io/cms/survey/?page=0&size=10'
+    await axios.get('https://api.qa.gessa.io/cms/surveys/?page=0&size=10'
         , {
             headers: Headers
         })
@@ -145,7 +145,7 @@ const surveyOngoing = async (request, response) => {
         totalDraftSurvey: draftSurvey.length,
         totalCompletedSurvey: completedSurvey.length,
 
-        survey: ongoingSurvey
+        surveys: ongoingSurvey
     });
 
 }
@@ -158,7 +158,7 @@ const surveyOngoing = async (request, response) => {
 const surveyDraft = async (request, response) => {
 
     var surveyData;
-    await axios.get('https://api.qa.gessa.io/cms/survey/?page=0&size=10'
+    await axios.get('https://api.qa.gessa.io/cms/surveys/?page=0&size=10'
         , {
             headers: Headers
         })
@@ -181,7 +181,7 @@ const surveyDraft = async (request, response) => {
         totalDraftSurvey: draftSurvey.length,
         totalCompletedSurvey: completedSurvey.length,
 
-        survey: draftSurvey
+        surveys: draftSurvey
     });
 
 }
@@ -191,7 +191,7 @@ const surveyDraft = async (request, response) => {
 const createSurvey = async (request, response) => {
 
     var surveyData;
-    await axios.post('https://api.qa.gessa.io/cms/survey', request.body
+    await axios.post('https://api.qa.gessa.io/cms/surveys', request.body
         , {
             headers: Headers
         },)
@@ -234,7 +234,10 @@ const total_Completed = async (surveyData, email) => {
 
             let expiry_date = (new Date(form.expiry_date));
             let current_date = new Date();
-            return (current_date > expiry_date) && (form.draft!=="true")
+            let result=(current_date > expiry_date) && (form.draft!==true);
+            if(result)
+                form.status="Completed"
+            return result;
         }
     })
 
@@ -251,7 +254,12 @@ const total_Ongoing = async (surveyData, email) => {
 
             let expiry_date = (new Date(form.expiry_date));
             let current_date = new Date();
-            return (current_date <= expiry_date) && (form.draft!=="true");
+
+            let result=(current_date <= expiry_date) && (form.draft!==true);
+
+            if(result)
+                form.status="Ongoing"
+            return result;
         }
     })
 
@@ -263,8 +271,14 @@ const total_Ongoing = async (surveyData, email) => {
 const total_Draft = (surveyData, email) => {
 
     surveyData = surveyData.filter(form => {
-        if(form.email===email)
-            return form.draft === "true";
+        if(form.email===email){
+            if(form.draft === true){
+                form.status="Draft";
+                return form.draft === true;
+            }
+                
+        }
+            
     })
     return surveyData;
 
